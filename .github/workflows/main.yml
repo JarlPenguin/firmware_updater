@@ -1,0 +1,26 @@
+name: Compile firmware updater zip
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Automatic zip compilation
+    runs-on: ubuntu-16.04
+    steps:
+    - name: Compile the zip
+      run: |
+        git config --global user.name "${GITHUB_USER}"
+        git config --global user.email "${GITHUB_EMAIL}"
+        git clone https://"${GITHUB_USER}":"${GITHUB_TOKEN}"@github.com/"${GITHUB_USER}"/firmware_updater.git
+        cd firmware_updater
+        curl https://raw.githubusercontent.com/JarlPenguin/releases/master/bin/github-release > github-release
+        chmod +x github-release
+        zip -r9 firmware_updater.zip * firmware_updater.zip -x github-release
+        ./github-release "${GITHUB_USER}/firmware_updater" "$(date +%Y%m%d)" "master" "Firmware for Moto G5S (montana)" "firmware_updater.zip"
+      env:
+        GITHUB_EMAIL: ${{ secrets.GITHUB_EMAIL }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_KEY }}
+        GITHUB_USER: ${{ secrets.GITHUB_USER }}
